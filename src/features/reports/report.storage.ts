@@ -2,34 +2,42 @@
    CampusFix — Report Storage (localStorage abstraction)
    ============================================================ */
 
-import type { IssueReport, ReportActivity } from './report.types'
-import { STORAGE_KEY } from './report.constants'
+import type {
+  IssueCategory,
+  IssuePriority,
+  IssueReport,
+  IssueStatus,
+  ReportActivity,
+} from './report.types'
+import { STORAGE_KEY, ALL_CATEGORIES, ALL_PRIORITIES, ALL_STATUSES } from './report.constants'
+
+export { STORAGE_KEY }
 
 /** Safe localStorage wrapper that never throws outside this module. */
 class LocalStorage {
-  private storage: Storage | null
-
-  constructor() {
+  private getStorage(): Storage | null {
     try {
-      this.storage = typeof window !== 'undefined' ? window.localStorage : null
+      return typeof window !== 'undefined' ? window.localStorage : null
     } catch {
-      this.storage = null
+      return null
     }
   }
 
   getItem(key: string): string | null {
-    if (!this.storage) return null
+    const storage = this.getStorage()
+    if (!storage) return null
     try {
-      return this.storage.getItem(key)
+      return storage.getItem(key)
     } catch {
       return null
     }
   }
 
   setItem(key: string, value: string): boolean {
-    if (!this.storage) return false
+    const storage = this.getStorage()
+    if (!storage) return false
     try {
-      this.storage.setItem(key, value)
+      storage.setItem(key, value)
       return true
     } catch {
       return false
@@ -37,9 +45,10 @@ class LocalStorage {
   }
 
   removeItem(key: string): boolean {
-    if (!this.storage) return false
+    const storage = this.getStorage()
+    if (!storage) return false
     try {
-      this.storage.removeItem(key)
+      storage.removeItem(key)
       return true
     } catch {
       return false
@@ -47,9 +56,10 @@ class LocalStorage {
   }
 
   get length(): number {
-    if (!this.storage) return 0
+    const storage = this.getStorage()
+    if (!storage) return 0
     try {
-      return this.storage.length
+      return storage.length
     } catch {
       return 0
     }
@@ -82,10 +92,13 @@ export function validateStoredReport(raw: unknown): IssueReport | null {
   if (!isValidString(obj.id)) return null
   if (!isValidString(obj.title)) return null
   if (!isValidString(obj.description)) return null
-  if (!isValidString(obj.category)) return null
   if (!isValidString(obj.location)) return null
+  if (!isValidString(obj.category)) return null
+  if (!ALL_CATEGORIES.includes(obj.category as IssueCategory)) return null
   if (!isValidString(obj.priority)) return null
+  if (!ALL_PRIORITIES.includes(obj.priority as IssuePriority)) return null
   if (!isValidString(obj.status)) return null
+  if (!ALL_STATUSES.includes(obj.status as IssueStatus)) return null
   if (!isValidDateString(obj.createdAt)) return null
   if (!isValidDateString(obj.updatedAt)) return null
 
@@ -113,16 +126,16 @@ export function validateStoredReport(raw: unknown): IssueReport | null {
   }
 
   return {
-    id: obj.id,
-    title: obj.title,
-    description: obj.description,
+    id: obj.id as string,
+    title: obj.title as string,
+    description: obj.description as string,
     category: obj.category as IssueReport['category'],
-    location: obj.location,
+    location: obj.location as string,
     priority: obj.priority as IssueReport['priority'],
     status: obj.status as IssueReport['status'],
-    createdAt: obj.createdAt,
-    updatedAt: obj.updatedAt,
-    reporter: obj.reporter as string | undefined,
+    createdAt: obj.createdAt as string,
+    updatedAt: obj.updatedAt as string,
+    reporter: typeof obj.reporter === 'string' ? obj.reporter : undefined,
     activity,
   }
 }
@@ -155,7 +168,7 @@ export function loadReports(): IssueReport[] {
 export function saveReports(reports: IssueReport[]): boolean {
   try {
     const json = JSON.stringify(reports)
-    return safeStorage.setItem('campusfix-reports-v1', json)
+    return safeStorage.setItem(STORAGE_KEY, json)
   } catch {
     return false
   }

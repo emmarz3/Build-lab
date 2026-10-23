@@ -11,11 +11,14 @@ import { ReportDetailPage } from '@/pages/ReportDetailPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { ReportsProvider } from '@/features/reports/ReportsContext'
+import { PageTransition } from '@/components/ui/PageTransition'
 
 function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ReportsProvider>
-      <AppShell>{children}</AppShell>
+      <AppShell>
+        <PageTransition>{children}</PageTransition>
+      </AppShell>
     </ReportsProvider>
   )
 }

@@ -60,7 +60,8 @@ export const LinkButton = forwardRef<HTMLAnchorElement, LinkButtonProps>(
         to={to}
         className={cn(
           'inline-flex items-center justify-center rounded-[var(--radius-md)]',
-          'font-medium transition-colors focus-visible:outline-none',
+          'font-medium transition-colors transition-transform duration-75 focus-visible:outline-none',
+          'active:scale-95',
           variantClasses[variant],
           sizeClasses[size],
           iconOnly ? 'w-auto aspect-square p-0' : '',

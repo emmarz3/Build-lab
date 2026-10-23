@@ -11,10 +11,11 @@ export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
   title?: string
   description?: string
   icon?: React.ReactNode
+  action?: React.ReactNode
 }
 
 export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
-  ({ className, title = 'Nothing here yet', description, icon, ...props }, ref) => {
+  ({ className, title = 'Nothing here yet', description, icon, action, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -33,6 +34,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
             {description}
           </p>
         )}
+        {action && <div className="mt-4">{action}</div>}
       </div>
     )
   }

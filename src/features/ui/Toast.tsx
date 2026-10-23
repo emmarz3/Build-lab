@@ -114,7 +114,7 @@ function ToastContainer({
             key={toast.id}
             className={cn(
               'flex items-start gap-3 rounded-[var(--radius-md)] border p-4 pr-10 shadow-[var(--shadow-lg)]',
-              'max-w-sm text-sm',
+              'max-w-sm text-sm toast-enter',
               toastVariantClasses[toast.type]
             )}
             role="status"
