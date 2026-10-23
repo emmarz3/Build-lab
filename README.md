@@ -190,6 +190,22 @@ contrast, and mobile usability. See `docs/issue-log.md`.
 
 ---
 
+## Week 2 — Components and Data
+
+Delivered in Week 2 (tag `week-2`, commit `26676cd`):
+
+- Reusable component library: `ReportCard`, `ReportsList`, `SearchBar`,
+  `FilterBar`, `StatusBadge`/`PriorityBadge`/`CategoryBadge`, `EmptyState`,
+  `Skeleton`, `PageHeader`, `Card`, `Button`, `LinkButton`, `Select`, `Input`.
+- MSW mock HTTP API: `GET /api/issues`, `GET /api/issues/:id`,
+  `POST /api/issues`, `PATCH /api/issues/:id`, `DELETE /api/issues/:id`.
+- Typed service layer (`src/services/issueApi.ts`) using fetch.
+- Async data loading in `ReportsContext` with loading/empty/error/retry states.
+- Search and filters operate on fetched data with result counts.
+- Issue log with ≥5 entries (`docs/issue-log.md`).
+- Mentor feedback response (`docs/feedback-response.md`).
+- Component map (`docs/component-map.md`).
+
 ## Progress
 
 | Phase | Status | Summary |
