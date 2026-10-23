@@ -6,34 +6,44 @@
 CampusFix is a single-page web application that lets students, staff, and
 operations teams **submit**, **track**, and **resolve** campus issues (broken
 projectors, electrical faults, plumbing leaks, cleaning requests, building
-damage, and more). Reports move through a clear workflow — *Submitted → Under
-Review → In Progress → Resolved* — with a full activity history, so everyone can
-see what is happening and when.
+damage, and more). Reports move through a clear workflow —
+*Submitted → Under Review → In Progress → Resolved* — with a full activity
+history, so everyone can see what is happening and when.
 
-This repository is the working codebase for the **Build-lab internship** task.
-It is built incrementally in numbered phases (see [Progress](#progress)).
+This repository is the working codebase for the **BuildLab Stage 1 Frontend
+Development** programme. It is built incrementally across three weeks (see
+[Progress](#progress)).
+
+This is a **demonstration using mock data**. It is not connected to a real
+university maintenance system or backend.
 
 ---
 
-## ✨ Features
+## Problem and target user
 
-- **Report an issue** — validated form with title, description, category,
-  location, priority, optional photo metadata, and reporter info.
-- **Reports listing** — search, multi-filter (category / status / priority),
-  sort, and a responsive card list view.
-- **Report detail** — full report view with status management, "advance to next
-  status" action, and a chronological activity history.
-- **Operations dashboard** — summary stat cards (total, open, in progress,
-  resolved), breakdowns by status / category / priority, and recent reports.
-- **Toast notifications** — success / error feedback on submit and actions.
-- **Page transitions** — subtle entrance animation that respects
-  `prefers-reduced-motion`.
-- **Persistent storage** — reports are stored in `localStorage` with a safe
-  abstraction that never throws; demo seed data on first run.
-- **Responsive & accessible** — semantic HTML, keyboard-friendly controls,
-  design tokens for consistent theming.
+**Problem:** Students may encounter broken classroom equipment, damaged furniture,
+plumbing faults, poor campus connectivity and other facility issues without a
+convenient, transparent interface for documenting problems and tracking their
+status.
 
-## 🧱 Tech stack
+**Target user:** A university student who needs to report and follow the status
+of campus maintenance problems.
+
+---
+
+## Key features
+
+- Issue listing with search, filter (category/status/priority), sort, and list view.
+- Issue detail with full information, status management, and activity history.
+- New report form with validation and toast feedback.
+- Operations dashboard with summary stats and breakdowns.
+- Saved issues persisted to localStorage.
+- Loading, empty, error, and retry states.
+- Responsive, accessible UI with reduced-motion support.
+
+---
+
+## Technology stack
 
 | Layer | Choice |
 |---|---|
@@ -42,46 +52,63 @@ It is built incrementally in numbered phases (see [Progress](#progress)).
 | Routing | React Router 7 |
 | Styling | Tailwind CSS 4 + CSS design tokens |
 | Icons | lucide-react |
+| Mock API | MSW (Mock Service Worker) |
 | Testing | Vitest + Testing Library (happy-dom) |
 | Linting | oxlint |
 
-## 🗂️ Project structure
+---
+
+## Project architecture
 
 ```
-.
-├── index.html
-├── package.json
-├── vite.config.ts
-├── tsconfig*.json
-├── public/                  # static assets
-└── src/
-    ├── App.tsx
-    ├── main.tsx
-    ├── index.css
-    ├── app/
-    │   └── router.tsx       # route definitions
-    ├── components/
-    │   ├── layout/          # AppShell, Header, Footer, Nav, PageHeader
-    │   ├── reports/         # ReportCard, ReportsList, SearchBar, FilterBar
-    │   └── ui/              # Button, Card, Badge, Input, Select, …
-    ├── features/
-    │   ├── reports/         # domain: types, constants, service, storage,
-    │   │                    # selectors, validation, context, demo data
-    │   └── ui/              # Toast provider
-    ├── lib/                 # utils (cn, etc.)
-    ├── pages/               # route-level pages
-    ├── styles/              # global.css, tokens.css
-    └── test/                # test setup
+src/
+├── app/            # router
+├── components/     # layout, reports, ui primitives
+├── features/       # domain: reports (types, constants, service, storage, selectors, validation, context), ui (toast)
+├── hooks/          # useSavedIssues
+├── mocks/          # MSW handlers + browser worker
+├── services/       # issueApi (fetch wrappers)
+├── pages/          # route-level pages
+├── styles/         # global.css, tokens.css
+└── test/           # setup
 ```
 
-## 🚀 Getting started
+Business logic, data access, presentation, and routing are separated. Selectors
+are pure functions for testability. Storage is wrapped in a never-throwing
+abstraction.
 
-### Prerequisites
+---
 
-- Node.js 20+ (LTS recommended)
-- npm 10+
+## Component map
 
-### Install & run
+See `docs/component-map.md` for the full map. Major components: `AppShell`,
+`Header`/`Footer`, `PageHeader`, `ReportCard`, `ReportsList`, `SearchBar`,
+`FilterBar`, `StatusBadge`/`PriorityBadge`/`CategoryBadge`, `Button`,
+`LinkButton`, `Card`, `EmptyState`, `Skeleton`, `PageTransition`,
+`ReportsContext`.
+
+---
+
+## Data source and mock API
+
+CampusFix uses **MSW** to provide a mock HTTP API so the deployed frontend can
+demonstrate data integration without a real backend.
+
+Endpoints:
+
+- `GET /api/issues` — list all issues.
+- `GET /api/issues/:id` — get one issue (404 if missing).
+- `POST /api/issues` — submit a new issue.
+- `PATCH /api/issues/:id` — update status.
+- `DELETE /api/issues/:id` — delete an issue.
+
+Data is fictional demonstration data. The mock API persists to `localStorage`
+where available; persistence has limitations in private/incognito or restricted
+environments. This is **not** a real university maintenance system.
+
+---
+
+## Setup and installation
 
 ```bash
 git clone https://github.com/emmarz3/Build-lab.git
@@ -90,29 +117,19 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:5173.
 
-### Build for production
-
-```bash
-npm run build
-npm run preview
-```
-
-## 📜 Available scripts
+## Development commands
 
 | Script | Description |
 |---|---|
-| `npm run dev` | Start the Vite dev server with HMR |
-| `npm run build` | Type-check (`tsc`) then production build |
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | Type-check then production build |
 | `npm run lint` | Run oxlint |
-| `npm run test` | Run the Vitest suite once |
-| `npm run preview` | Preview the production build |
+| `npm run test` | Run Vitest suite once |
+| `npm run preview` | Preview production build |
 
-## 🧪 Testing
-
-The domain logic is kept pure (no React dependency) so it can be tested
-directly. Run:
+## Test commands
 
 ```bash
 npm run test
@@ -121,78 +138,79 @@ npm run test
 Current suite: **21 tests** across `report.selectors`, `report.service`,
 `report.storage`, and `report.validation` — all passing.
 
-## 🧩 Data model
+---
 
-Core entity: `IssueReport` (see `src/features/reports/report.types.ts`).
+## Deployment
 
-```ts
-interface IssueReport {
-  id: string
-  title: string
-  description: string
-  category: IssueCategory      // classroom-equipment | electrical | plumbing | …
-  location: string
-  priority: IssuePriority      // low | medium | high
-  status: IssueStatus          // submitted | under-review | in-progress | resolved
-  createdAt: string
-  updatedAt: string
-  activity: ReportActivity[]   // chronological history
-  reporter?: string
-}
-```
+Deployed via Vercel (static hosting). Ensure SPA fallback is configured so
+nested routes (`/issues/:id`) work on refresh. MSW service worker must be
+served from `public/` (copied via `msw init`).
 
-Statuses follow a strict workflow order defined in `STATUS_ORDER`; only forward
-transitions are allowed via `advanceStatus`. Reports are persisted to
-`localStorage` under the key `campusfix-reports-v1`.
-
-## 🏛️ Architecture notes
-
-- **Feature-based folders** — domain code lives under `src/features/reports`,
-  UI primitives under `src/components/ui`.
-- **Context state** — `ReportsContext` is the single source of React state for
-  reports, wrapping the service/storage layer.
-- **Pure selectors** — filtering, searching, sorting, and counting are pure
-  functions in `report.selectors.ts`, fully unit-tested.
-- **Storage abstraction** — `report.storage.ts` wraps `localStorage` in a
-  never-throwing class so SSR / restricted environments are safe.
-- **Design tokens** — colors, spacing, and typography live in
-  `src/styles/tokens.css` and are consumed via CSS variables.
-
-## 📈 Progress
-
-The project is delivered in phases. Each phase is a commit on `main`.
-
-| Phase | Status | Summary |
-|---|---|---|
-| 1 — Foundation | ✅ Complete | Vite/React/TS setup, design tokens, data model, context state, UI components, routing, demo data |
-| 2 — Reports listing | ✅ Complete | Reports page with search, filter, sort, and list view |
-| 3 — Report detail | ✅ Complete | Detail page with activity history and status management |
-| 4 — New report form | ✅ Complete | Validated form, toast notifications, submission flow |
-| 5 — Dashboard & polish | 🟡 In progress | Operations dashboard, PageTransition, storage hardening, test suite (21 tests) |
-| 6 — (planned) | ⏳ Planned | Photo uploads, auth, backend sync, deployment |
-
-### Phase 5 details (current)
-
-- Operations dashboard with stat cards and breakdowns by status / category /
-  priority, plus recent reports.
-- `PageTransition` component with reduced-motion support.
-- Hardened `localStorage` abstraction (lazy access, never throws).
-- Vitest suite: selectors, service, storage, validation (21 passing tests).
-- Tailwind CSS 4 wired through `@tailwindcss/vite`.
-
-## 🛣️ Roadmap
-
-- Persisted photo uploads (currently metadata-only).
-- Authentication and per-user report ownership.
-- Backend sync (replace `localStorage` with an API).
-- Deployment (Vercel) and CI.
-- Accessibility audit and i18n.
-
-## 📄 License
-
-This project is part of an internship (Build-lab). All rights reserved by the
-author unless stated otherwise.
+Verified live URL: not deployed — Vercel credentials unavailable in this environment.
 
 ---
 
-_Built with ❤️ for the Build-lab internship._
+## Accessibility
+
+- Semantic HTML, associated labels, visible focus rings.
+- Heading hierarchy, alt text where applicable.
+- Reduced-motion support via `PageTransition` and CSS.
+- Contrast targets WCAG 2.2 AA (4.5:1 for normal text).
+
+**Audit:** Lighthouse/axe not available in this environment; manual verification
+performed for keyboard navigation, focus visibility, labels, heading structure,
+contrast, and mobile usability. See `docs/issue-log.md`.
+
+---
+
+## Important technical decisions
+
+- Feature-based folder structure; pure selectors for testability.
+- MSW over a real backend to keep the app frontend-focused and deployable.
+- localStorage for persistence with never-throwing wrappers.
+- Statuses/categories kept as the project's own enums (documented deviation from
+  the suggested spec enums) to preserve working functionality.
+
+---
+
+## Known limitations
+
+- Mock data only; no real backend or authentication.
+- localStorage persistence may be unavailable in some environments.
+- Photo uploads are metadata-only.
+- No real-time updates.
+
+---
+
+## Libraries, templates and AI tools used
+
+- Vite React+TS template (initial scaffold).
+- MSW, React Router, Tailwind CSS, lucide-react, Vitest, Testing Library.
+- AI assistance used for code generation and documentation.
+
+---
+
+## Progress
+
+| Phase | Status | Summary |
+|---|---|---|
+| 0 — Inspection | ✅ Complete | Repo inspected, env verified |
+| 1 — Week 1 foundations | ✅ Complete | Listing, search/filter, form, responsive |
+| 2 — Components & data | ✅ Complete | MSW API, reusable components, data states |
+| 3 — Quality & delivery | ✅ Complete | Routing, saved state, tests, docs |
+| 4 — Final review | ✅ Complete | Tags, docs, deployment prep |
+
+### Week 1 checkpoint
+Tag `week-1` at commit `aadefa1`.
+
+### Week 2 checkpoint
+Tag `week-2` at commit `26676cd`.
+
+### Week 3 checkpoint
+Tag `week-3` at commit `9a58588`.
+
+---
+
+## License
+
+BuildLab Stage 1 Frontend Development — demonstration project.
