@@ -6,6 +6,8 @@
 
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useReports } from '@/features/reports/ReportsContext'
+import { useSavedIssues } from '@/hooks/useSavedIssues'
+import { fetchIssue } from '@/services/issueApi'
 import { getNextStatuses } from '@/features/reports/report.constants'
 import { STATUS_LABELS } from '@/features/reports/report.constants'
 import type { IssueReport, IssueStatus } from '@/features/reports/report.types'
@@ -22,18 +24,36 @@ import {
   Edit,
   MapPin,
   Trash2,
+  Bookmark,
   User,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { reports, loading, updateStatus, deleteReport } = useReports()
+  const { isSaved, toggle } = useSavedIssues()
+  const saved = id ? isSaved(id) : false
   const [isUpdating, setIsUpdating] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const report = id ? reports.find((r) => r.id === id) : undefined
+  const [fetched, setFetched] = useState<IssueReport | null>(null)
+  const [fetching, setFetching] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
+  const report = id ? (reports.find((r) => r.id === id) ?? fetched) : undefined
+
+  useEffect(() => {
+    if (!id) return
+    if (reports.find((r) => r.id === id)) return
+    setFetching(true)
+    setFetchError(null)
+    fetchIssue(id)
+      .then(setFetched)
+      .catch((e) => setFetchError(e instanceof Error ? e.message : 'Failed to load issue.'))
+      .finally(() => setFetching(false))
+  }, [id, reports])
 
   // ----- Handlers -------------------------------------------------------
 
@@ -53,7 +73,7 @@ export function ReportDetailPage() {
     setIsDeleting(true)
     try {
       await deleteReport(report.id)
-      navigate('/reports')
+      navigate('/issues')
     } finally {
       setIsDeleting(false)
     }
@@ -61,7 +81,7 @@ export function ReportDetailPage() {
 
   // ----- Loading --------------------------------------------------------
 
-  if (loading) {
+  if (loading || fetching) {
     return (
       <div className="space-y-4 py-6">
         <div className="h-8 w-48 animate-pulse rounded-[var(--radius-md)] bg-[var(--color-surface-strong)]" />
@@ -72,7 +92,7 @@ export function ReportDetailPage() {
 
   // ----- Not found ------------------------------------------------------
 
-  if (!report) {
+  if (!report || fetchError) {
     return (
       <div className="py-12 text-center">
         <Clock className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]" />
@@ -80,7 +100,7 @@ export function ReportDetailPage() {
         <p className="mt-2 text-[var(--color-text-secondary)]">
           The report you’re looking for doesn’t exist or has been deleted.
         </p>
-        <LinkButton href="/reports" label="Back to reports" icon={<ArrowLeft className="h-4 w-4" />} />
+        <LinkButton href="/issues" label="Back to reports" icon={<ArrowLeft className="h-4 w-4" />} />
       </div>
     )
   }
@@ -101,6 +121,14 @@ export function ReportDetailPage() {
         action={
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" icon={<Edit className="h-4 w-4" />} />
+            <Button
+              variant={saved ? 'primary' : 'outline'}
+              size="sm"
+              icon={<Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />}
+              onClick={() => id && toggle(id)}
+            >
+              {saved ? 'Saved' : 'Save'}
+            </Button>
             <Button
               variant="danger"
               size="sm"

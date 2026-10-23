@@ -210,7 +210,7 @@ function RecentReportsSection({ reports }: { reports: IssueReport[] }) {
             title="No reports yet"
             description="Reports will appear here once they are created."
             action={
-              <LinkButton to="/reports/new" size="sm">
+              <LinkButton to="/issues/new" size="sm">
                 Report an Issue
               </LinkButton>
             }
@@ -249,7 +249,7 @@ function RecentReportsSection({ reports }: { reports: IssueReport[] }) {
                 {showAll ? 'Show less' : 'Show all'}
               </button>
             )}
-            <LinkButton to="/reports" variant="ghost" size="sm" icon={<TrendingUp className="h-3.5 w-3.5" />}>
+            <LinkButton to="/issues" variant="ghost" size="sm" icon={<TrendingUp className="h-3.5 w-3.5" />}>
               View all
             </LinkButton>
           </div>
@@ -258,7 +258,7 @@ function RecentReportsSection({ reports }: { reports: IssueReport[] }) {
       <CardContent className="p-0">
         <div className="divide-y divide-[var(--color-border)]">
           {displayReports.map((report) => (
-            <Link key={report.id} to={`/reports/${report.id}`} className="block">
+            <Link key={report.id} to={`/issues/${report.id}`} className="block">
               <ReportCard report={report} className="m-4 rounded-[var(--radius-md)] hover:shadow-none" />
             </Link>
           ))}
@@ -387,7 +387,7 @@ export function DashboardPage() {
             title="No data available"
             description="Create your first report to see dashboard metrics."
             action={
-              <LinkButton to="/reports/new" icon={<FileText className="h-4 w-4" />}>
+              <LinkButton to="/issues/new" icon={<FileText className="h-4 w-4" />}>
                 Report an Issue
               </LinkButton>
             }
@@ -406,7 +406,7 @@ export function DashboardPage() {
         title="Dashboard"
         description="Operations overview and key metrics"
         action={
-          <LinkButton to="/reports/new" icon={<FileText className="h-4 w-4" />}>
+          <LinkButton to="/issues/new" icon={<FileText className="h-4 w-4" />}>
             New Report
           </LinkButton>
         }
@@ -421,7 +421,7 @@ export function DashboardPage() {
           iconColor="var(--color-primary)"
           bgColor="var(--color-primary-subtle)"
           borderColor="var(--color-primary-border)"
-          href="/reports"
+          href="/issues"
         />
         <StatCard
           label="Open Reports"
@@ -430,7 +430,7 @@ export function DashboardPage() {
           iconColor="var(--color-info)"
           bgColor="var(--color-info-bg)"
           borderColor="var(--color-info-border)"
-          href="/reports"
+          href="/issues"
         />
         <StatCard
           label="In Progress"
@@ -439,7 +439,7 @@ export function DashboardPage() {
           iconColor="var(--color-warning)"
           bgColor="var(--color-warning-bg)"
           borderColor="var(--color-warning-border)"
-          href="/reports"
+          href="/issues"
         />
         <StatCard
           label="Resolved"
@@ -448,7 +448,7 @@ export function DashboardPage() {
           iconColor="var(--color-success)"
           bgColor="var(--color-success-bg)"
           borderColor="var(--color-success-border)"
-          href="/reports"
+          href="/issues"
         />
       </div>
 

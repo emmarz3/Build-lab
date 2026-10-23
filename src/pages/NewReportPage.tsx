@@ -114,7 +114,7 @@ export function NewReportPage() {
         title: 'Report submitted',
         message: `Issue #${report.id.split('_')[1]?.slice(0, 6)} created.`,
       })
-      navigate('/reports')
+      navigate('/issues')
     } catch {
       addToast({
         type: 'error',
@@ -137,7 +137,7 @@ export function NewReportPage() {
         description="Fill out the form below and our team will address it as quickly as possible."
         action={
           <LinkButton
-            to="/reports"
+            to="/issues"
             variant="outline"
             size="sm"
             icon={<ArrowLeft className="h-4 w-4" />}
@@ -238,7 +238,7 @@ export function NewReportPage() {
           {/* Submit */}
           <div className="flex items-center justify-end gap-3 pt-4">
             <LinkButton
-              to="/reports"
+              to="/issues"
               variant="ghost"
               size="md"
             >

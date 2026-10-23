@@ -69,7 +69,7 @@ export function ReportsPage() {
         }
         action={
           <LinkButton
-            to="/reports/new"
+            to="/issues/new"
             icon={<PlusCircle className="h-5 w-5" />}
           >
             Report an Issue

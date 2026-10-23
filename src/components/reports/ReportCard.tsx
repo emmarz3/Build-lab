@@ -6,8 +6,9 @@ import type { IssueReport } from '@/features/reports/report.types'
 import { cn, formatDateRelative } from '@/lib/utils'
 import { Card } from '../ui/Card'
 import { StatusBadge, PriorityBadge, CategoryBadge } from '../ui/StatusBadge'
-import { Clock, MapPin, ArrowUpRight } from 'lucide-react'
+import { Clock, MapPin, ArrowUpRight, Bookmark } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useSavedIssues } from '@/hooks/useSavedIssues'
 
 export interface ReportCardProps {
   report: IssueReport
@@ -15,6 +16,8 @@ export interface ReportCardProps {
 }
 
 export function ReportCard({ report, className }: ReportCardProps) {
+  const { isSaved, toggle } = useSavedIssues()
+  const saved = isSaved(report.id)
   const statusColors: Record<string, string> = {
     submitted: 'ring-[var(--color-status-submitted)]/30',
     'under-review': 'ring-[var(--color-status-review)]/30',
@@ -31,13 +34,24 @@ export function ReportCard({ report, className }: ReportCardProps) {
         className
       )}
     >
-      <Link to={`/reports/${report.id}`} className="absolute inset-0" aria-label={`View report: ${report.title}`} />
+      <Link to={`/issues/${report.id}`} className="absolute inset-0" aria-label={`View report: ${report.title}`} />
 
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-base font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-1">
           {report.title}
         </h3>
-        <StatusBadge status={report.status} showIcon />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(report.id) }}
+            aria-label={saved ? 'Unsave issue' : 'Save issue'}
+            aria-pressed={saved}
+            className="relative z-10 rounded p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-focus)]"
+          >
+            <Bookmark className={cn('h-4 w-4', saved && 'fill-[var(--color-primary)] text-[var(--color-primary)]')} />
+          </button>
+          <StatusBadge status={report.status} showIcon />
+        </div>
       </div>
 
       <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2">

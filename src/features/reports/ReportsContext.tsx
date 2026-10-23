@@ -1,19 +1,17 @@
 /* ============================================================
    CampusFix — Reports Context (Global State)
-   Single source of truth for all report data.
+   Single source of truth for all report data, backed by mock HTTP API.
    ============================================================ */
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import type { IssueReport, IssueStatus, IssueCategory, IssuePriority } from './report.types'
-import { DEMO_REPORTS } from './demo-data'
-import { STORAGE_KEY } from './report.constants'
-import { safeStorage, validateStoredReport } from './report.storage'
 import {
-  updateReportStatus,
-  createReport as svcCreateReport,
-  removeReport as svcRemoveReport,
-} from './report.service'
+  fetchIssues,
+  createIssue as apiCreate,
+  updateIssueStatus as apiUpdateStatus,
+  deleteIssue as apiDelete,
+} from '@/services/issueApi'
 
 interface ReportsContextValue {
   reports: IssueReport[]
@@ -29,7 +27,7 @@ interface ReportsContextValue {
   }) => Promise<IssueReport>
   updateStatus: (id: string, newStatus: IssueStatus) => Promise<boolean>
   deleteReport: (id: string) => Promise<boolean>
-  refresh: () => void
+  refresh: () => Promise<void>
 }
 
 const ReportsContext = createContext<ReportsContextValue | undefined>(undefined)
@@ -42,48 +40,28 @@ export function useReports() {
   return ctx
 }
 
-/**
- * Initialize storage with demo data if empty.
- * Never overwrites existing user-created reports.
- */
-function initializeStorage(): IssueReport[] {
-  const existing = safeStorage.getItem(STORAGE_KEY)
-  if (existing) {
-    try {
-      const parsed = JSON.parse(existing)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed
-          .map(validateStoredReport)
-          .filter((r): r is IssueReport => r !== null)
-      }
-    } catch {
-      // Malformed data — fall through to re-initialize
-    }
-  }
-
-  // Seed with demo data
-  const demo = DEMO_REPORTS
-  safeStorage.setItem(STORAGE_KEY, JSON.stringify(demo))
-  return demo
-}
-
 export function ReportsProvider({ children }: { children: ReactNode }) {
   const [reports, setReports] = useState<IssueReport[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Initialize on mount
-  useEffect(() => {
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const initial = initializeStorage()
-      setReports(initial)
-    } catch {
-      setError('Failed to load reports from storage.')
-      setReports(DEMO_REPORTS)
+      const data = await fetchIssues()
+      setReports(data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load reports.')
+      setReports([])
     } finally {
       setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   const createReport = useCallback(
     async (params: {
@@ -94,7 +72,7 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
       priority: IssuePriority
       reporter?: string
     }): Promise<IssueReport> => {
-      const saved = svcCreateReport(params)
+      const saved = await apiCreate(params)
       setReports((prev) => [saved, ...prev])
       return saved
     },
@@ -103,33 +81,30 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
 
   const updateStatus = useCallback(
     async (id: string, newStatus: IssueStatus): Promise<boolean> => {
-      const updated = updateReportStatus(id, newStatus)
-      if (updated) {
-        setReports((prev) =>
-          prev.map((r) => (r.id === id ? updated : r))
-        )
+      try {
+        const updated = await apiUpdateStatus(id, newStatus)
+        setReports((prev) => prev.map((r) => (r.id === id ? updated : r)))
         return true
+      } catch {
+        return false
       }
-      return false
     },
     []
   )
 
-  const deleteReport = useCallback(
-    async (id: string): Promise<boolean> => {
-      const ok = svcRemoveReport(id)
-      if (ok) {
-        setReports((prev) => prev.filter((r) => r.id !== id))
-      }
+  const deleteReport = useCallback(async (id: string): Promise<boolean> => {
+    try {
+      const ok = await apiDelete(id)
+      if (ok) setReports((prev) => prev.filter((r) => r.id !== id))
       return ok
-    },
-    []
-  )
-
-  const refresh = useCallback(() => {
-    const current = initializeStorage()
-    setReports(current)
+    } catch {
+      return false
+    }
   }, [])
+
+  const refresh = useCallback(async () => {
+    await load()
+  }, [load])
 
   const value: ReportsContextValue = {
     reports,

@@ -29,6 +29,18 @@ export const router = createBrowserRouter([
     element: <RootLayout><LandingPage /></RootLayout>,
   },
   {
+    path: '/issues',
+    element: <RootLayout><ReportsPage /></RootLayout>,
+  },
+  {
+    path: '/issues/new',
+    element: <RootLayout><NewReportPage /></RootLayout>,
+  },
+  {
+    path: '/issues/:id',
+    element: <RootLayout><ReportDetailPage /></RootLayout>,
+  },
+  {
     path: '/reports',
     element: <RootLayout><ReportsPage /></RootLayout>,
   },
